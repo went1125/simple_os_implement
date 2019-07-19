@@ -30,7 +30,7 @@ DESC_DATA_HIGH4     equ (0x00 << 24) + DESC_G_4K + DESC_D_32 + \
 
 DESC_VIDEO_HIGH4     equ (0x00 << 24) + DESC_G_4K + DESC_D_32 + \
                         DESC_L + DESC_AVL + DESC_LIMIT_VIDEO2 + \
-                        DESC_P +  DESC_DPL_0 + DESC_S_DATA + DESC_TYPE_DATA + 0x00
+                        DESC_P +  DESC_DPL_0 + DESC_S_DATA + DESC_TYPE_DATA + 0x0b
 
 ;SELECTOR ATTRIBUTES
 RPL0    equ 00b
@@ -39,3 +39,12 @@ RPL2    equ 10b
 RPL3    equ 11b
 TI_GDT  equ 000b
 TI_LDT  equ 100b
+
+;Page Setting
+PAGE_DIR_TABLE_POS equ 0x100000
+;Page entry attributes setting
+PG_P equ 1b
+PG_RW_R equ 00b
+PG_RW_W equ 10b
+PG_US_S equ 000b
+PG_US_U equ 100b
