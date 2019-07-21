@@ -6,11 +6,14 @@ mbr.bin:
 loader.bin:
 	nasm -I boot/include/ -o boot/loader.bin boot/loader.S
 
-kernel.bin: kernel.o
-	ld -m elf_i386 kernel/kernel.o -Ttext 0xc0001500 -e main -o kernel/kernel.bin
+kernel.bin: kernel.o print.o
+	ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/kernel.bin kernel/kernel.o lib/kernel/print.o
 
 kernel.o:
-	gcc -c -m32 -o kernel/kernel.o kernel/main.c
+	gcc -I lib/kernel/ -c -m32 -o kernel/kernel.o kernel/main.c
+
+print.o:
+	nasm -f elf -o lib/kernel/print.o lib/kernel/print.S
 
 clean:
 	rm -f boot/*.bin kernel/*.bin kernel/*.o
