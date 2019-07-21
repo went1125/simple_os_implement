@@ -123,10 +123,92 @@ SECTION LOADER vstart=LOADER_BASE_ADDR
 
         mov byte [gs:160], 'P'
 
-        ;Create PDE and PTE.
-        mov ecx, 4096; 4K
-        mov esi, 0
-        setup_page:
+        ;Read kernel to memory.
+        mov eax, KERNEL_START_SECTOR
+        mov ebx, KERNEL_BIN_BASE_ADDR
+        mov ecx, 200
+        call rd_disk_m32 ; read kernel.bin(ELF) to memory
+        ;Create page and transform to page mode.
+        call setup_page
+        sgdt [gdt_ptr]
+        mov ebx, [gdt_ptr+2]
+        or dword [ebx + 0x18 + 4], 0xc0000000
+        add dword [gdt_ptr + 2], 0xc0000000
+        add esp, 0xc0000000
+        ;Store pdt to cr3
+        mov eax, PAGE_DIR_TABLE_POS
+        mov cr3, eax
+        ;Setting page enable bit on cr0
+        mov eax, cr0
+        or eax, 0x80000000
+        mov cr0, eax
+        ;reload gdt
+        lgdt [gdt_ptr]
+        mov byte [gs:160], 'V'
+        jmp SELECTOR_CODE:enter_kernel
+
+        enter_kernel:
+            call kernel_init
+        ;    jmp $
+            mov esp, 0xc009f000
+            jmp KERNEL_ENTRY_POINT
+
+        rd_disk_m32:
+            ;back up data
+            mov esi, eax
+            mov edi, ecx
+
+            ;Step1. Setting sector account to disk I/O register.
+            mov edx, 0x1f2
+            mov al, cl
+            out dx, al
+            mov eax, esi
+            ;Step2. Setting LBA address to disk I/O register.
+            ;LBA address 7~0 bits setting.
+            mov edx, 0x1f3
+            out dx, al
+            ;LBA address 15~8 bits setting.
+            mov cl, 8
+            shr eax, cl
+            mov edx, 0x1f4
+            out dx, al
+            ;LBA address 23~16 bits setting.
+            shr eax, cl
+            mov edx, 0x1f5
+            out dx, al
+            ;LBA address 24~27 bits setting and LBA mode setting(device register).
+            shr eax, cl
+            and al, 0x0f
+            or al, 0xe0
+            mov edx, 0x1f6
+            out dx, al
+            ;Step3. Setting command to disk I/O register.
+            mov edx, 0x1f7
+            mov al, 0x20
+            out dx, al
+            ;Step4. Check disk status
+            .not_ready:
+                nop ;delay
+                in al, dx
+                and al, 0x88
+                cmp al, 0x08
+                jnz .not_ready
+            ;Step5. Reading data from disk I/O register.
+            mov eax, edi
+            mov edx, 256
+            mul edx
+            mov ecx, eax
+            mov edx, 0x1f0
+            .go_on_read:
+                in ax, dx
+                mov [ebx], eax
+                add ebx, 2
+                loop .go_on_read
+                ret
+
+        setup_page: ;Create PDE and PTE.
+            mov ecx, 4096; 4K
+            mov esi, 0
             .clear_page_dir:; clear the page dir table
                 mov byte [PAGE_DIR_TABLE_POS+esi], 0
                 inc esi
@@ -134,15 +216,15 @@ SECTION LOADER vstart=LOADER_BASE_ADDR
 
             .create_pde:; Create page dir table
                 mov eax, PAGE_DIR_TABLE_POS
-                add eax, 0x1000 ;Now eax is the first page pos.
+                add eax, 0x1000 ;Now eax is the first pde pos.
                 mov ebx, eax
                 or eax, PG_US_U | PG_RW_R | PG_P ;user process pde attribute initialize
                 mov [PAGE_DIR_TABLE_POS + 0x0], eax
                 mov [PAGE_DIR_TABLE_POS + 768*4], eax
                 sub eax, 0x1000
-                mov [PAGE_DIR_TABLE_POS + 1024*4 - 4], eax ; Last pde is pdt itself.
+                mov [PAGE_DIR_TABLE_POS + 1023*4], eax ; Last pde is pdt itself.
 
-            mov ecx, 256 ; 1MB / 4kb = 256(Kernel store on first 1MB memory address)
+            mov ecx, 256 ; 1MB / 4kb = 256(Kernel store on first physical 1MB memory address)
             mov esi, 0
             mov edx, PG_US_U | PG_RW_W | PG_P
             .create_pte:
@@ -162,5 +244,47 @@ SECTION LOADER vstart=LOADER_BASE_ADDR
                 inc esi
                 add eax, 4096
                 loop .create_kernel_pde
-                ret            
-        jmp $
+                ret
+
+        kernel_init: ; Parsing ELF format and read kenel to memory.
+            xor eax, eax
+            xor ebx, ebx ;store ph address.
+            xor ecx, ecx ;store the number of ph
+            xor edx, edx ;store ph size.
+
+            mov dx, [KERNEL_BIN_BASE_ADDR + 42] ;mapping to e_phentsize from elf header.
+
+            mov ebx, [KERNEL_BIN_BASE_ADDR + 28] ;mapping to e_phoff from elf header.
+            add ebx, KERNEL_BIN_BASE_ADDR ;get the first program header.
+
+            mov cx, [KERNEL_BIN_BASE_ADDR + 44] ;mapping to e_phnum from elf header.
+            .each_segment:
+                cmp byte [ebx + 0], 0
+                je .PTNULL
+                push dword [ebx + 16] ;mapping to p_filesize from program header.(Prameter 3 to mem_cpy)
+                mov eax, [ebx + 4] ; mapping to p_offset from program header.
+                add eax, KERNEL_BIN_BASE_ADDR
+                push eax ;Segment physical address(Prameter 2 to mem_cpy)
+                push dword [ebx + 8] ;Target address(Prameter 3 to mem_cpy)
+                call mem_cpy
+                add esp, 12
+
+            .PTNULL:
+                add ebx, edx
+                loop .each_segment
+                ret
+
+            mem_cpy: ;(dst, src, size)
+                cld
+                push ebp
+                mov ebp, esp
+                push ecx
+                ;Get Parameter.
+                mov edi, [ebp + 8]
+                mov esi, [ebp + 12]
+                mov ecx, [ebp + 16]
+                rep movsb
+                ; Recovering.
+                pop ecx
+                pop ebp
+                ret
