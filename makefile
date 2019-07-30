@@ -1,19 +1,34 @@
-all: mbr.bin loader.bin kernel.bin
+MAKE = make all
+SUB_DIRS = ./kernel/asm ./kernel/c
 
-mbr.bin:
-	nasm -I boot/include/ -o boot/mbr.bin boot/mbr.S
+MBR_IMG = mbr.bin
+LOADER = loader.bin
+KERNEL_IMG = kernel.bin
 
-loader.bin:
-	nasm -I boot/include/ -o boot/loader.bin boot/loader.S
+KERNEL_ENTRY_ADDRESS = 0xc0001500
+KERNEL_ENTRY_SECTION = main
 
-kernel.bin: kernel.o print.o
-	ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/kernel.bin kernel/kernel.o lib/kernel/print.o
+LD = ld
+LD_FLAGS = -m elf_i386 -Ttext $(KERNEL_ENTRY_ADDRESS) -e $(KERNEL_ENTRY_SECTION)
+LINK_OBJS = ./build/main.o ./build/print.o ./build/kernel.o ./build/interrupt.o ./build/init.o
 
-kernel.o:
-	gcc -I lib/kernel/ -c -m32 -o kernel/kernel.o kernel/main.c
+NASM = nasm
 
-print.o:
-	nasm -f elf -o lib/kernel/print.o lib/kernel/print.S
+all: $(SUB_DIRS) $(KERNEL_IMG) $(MBR_IMG) $(LOADER)
+
+$(SUB_DIRS):
+	$(MAKE) -C $@
+
+$(KERNEL_IMG):
+	$(LD) $(LD_FLAGS) -o ./build/$@ $(LINK_OBJS)
+
+$(MBR_IMG):
+	$(NASM) -I boot/include/ -o boot/$(MBR_IMG) boot/mbr.S
+
+$(LOADER):
+	$(NASM) -I boot/include/ -o boot/$(LOADER) boot/loader.S
+
+.PHONY: $(SUB_DIRS) clean
 
 clean:
-	rm -f boot/*.bin kernel/*.bin kernel/*.o
+	rm -f ./build/*.o ./build/*.bin ./boot/*.bin ./boot/*.o
