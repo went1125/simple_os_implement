@@ -10,7 +10,7 @@ KERNEL_ENTRY_SECTION = main
 
 LD = ld
 LD_FLAGS = -m elf_i386 -Ttext $(KERNEL_ENTRY_ADDRESS) -e $(KERNEL_ENTRY_SECTION)
-LINK_OBJS = ./build/main.o ./build/print.o ./build/kernel.o ./build/interrupt.o ./build/init.o
+LINK_OBJS = ./build/main.o ./build/print.o ./build/kernel.o ./build/interrupt.o ./build/init.o ./build/timer.o
 
 NASM = nasm
 

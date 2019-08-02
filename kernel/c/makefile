@@ -1,7 +1,8 @@
 CC = gcc
 C_INCLUDE_GLOBAL = ../../lib
 C_INCLUDE_KERNEL = ../../lib/kernel
-C_FLAGS = -I $(C_INCLUDE_GLOBAL) -I $(C_INCLUDE_KERNEL) -c -m32 -fno-builtin -fno-stack-protector
+C_INCLUDE_DEVICE = ../../lib/device
+C_FLAGS = -I $(C_INCLUDE_GLOBAL) -I $(C_INCLUDE_KERNEL) -I $(C_INCLUDE_DEVICE) -c -m32 -fno-builtin -fno-stack-protector
 
 OBJS = interrupt.o init.o main.o
 
