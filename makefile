@@ -11,7 +11,7 @@ KERNEL_ENTRY_SECTION = main
 LD = ld
 LD_FLAGS = -m elf_i386 -Ttext $(KERNEL_ENTRY_ADDRESS) -e $(KERNEL_ENTRY_SECTION)
 LINK_OBJS = ./build/main.o ./build/print.o ./build/kernel.o ./build/timer.o ./build/interrupt.o ./build/init.o \
-			./build/debug.o
+			./build/debug.o ./build/string.o ./build/bitmap.o ./build/memory.o
 
 NASM = nasm
 
@@ -32,4 +32,4 @@ $(LOADER):
 .PHONY: $(SUB_DIRS) clean
 
 clean:
-	rm -f ./build/*.o ./build/*.bin ./boot/*.bin ./boot/*.o
+	rm -f ./*.bin ./build/*.o ./build/*.bin ./boot/*.bin ./boot/*.o

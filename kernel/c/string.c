@@ -30,13 +30,13 @@ int memcmp(const void* a_, const void* b_, uint32_t size) {
 char* strcpy(char* dst_, const char* src_) {
     ASSERT(dst_ != NULL && src_ != NULL);
     char* r = dst_;
-    while((*dst++ = *src_++));
+    while((*dst_++ = *src_++));
     return r;
 }
 
 uint32_t strlen(const char* str) {
     ASSERT(str != NULL);
-    cosnt char* p = str;
+    const char* p = str;
     while(*p++);
     return p-str-1;
 }
@@ -70,7 +70,7 @@ char* strrchr(const char* str, const uint8_t ch) {
 }
 
 char* strcat(char* dst_, const char* src_) {
-    ASSERT(dst_ != NULL, && src_ != NULL);
+    ASSERT(dst_ != NULL && src_ != NULL);
     char* str = dst_;
     while(*str++);
     --str;
