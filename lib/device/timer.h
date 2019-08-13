@@ -1,4 +1,4 @@
-#ifndef __LIB_KERNEL_TIMER_H
-#define __LIB_KERNEL_TIMER_H
-void timer_init() ;
+#ifndef __LIB_DEVICE_TIMER_H
+#define __LIB_DEVICE_TIMER_H
+void timer_init();
 #endif

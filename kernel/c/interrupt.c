@@ -65,9 +65,25 @@ static void pic_init() {
 
 static void general_intr_handler(uint8_t vec_nr) {
     if(vec_nr == 0x27 || vec_nr == 0x2f) return;
-    put_str("int vector: 0x");
-    put_int(vec_nr);
-    put_char('\n');
+
+    g_set_cursor(0);
+    int cursor_pos = 0;
+    while(cursor_pos++ < 320) put_char(' ');
+    g_set_cursor(0);
+    put_str("!!!!!!      exception message begin      !!!!!!\n");
+    g_set_cursor(88);
+    put_str(intr_name[vec_nr]);
+    if(vec_nr == 14) {
+        int page_fault_vaddr = 0;
+        asm ("movl %%cr2, %0": "=r"(page_fault_vaddr));
+        put_str("\npage fault addr is ");put_int(page_fault_vaddr);
+    }
+    put_str("\n!!!!!!      exception message begin      !!!!!!");
+    while(1);
+}
+
+void register_handler(uint8_t vector_no, intr_hadnler function) {
+    idt_table[vector_no] = function;
 }
 
 static void exception_init() {

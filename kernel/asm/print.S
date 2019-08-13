@@ -10,6 +10,28 @@ section .text
     global put_str
     global put_char
     global put_int
+    global g_set_cursor
+
+    g_set_cursor:
+        pushad
+        mov ebp, esp
+        mov ebx, [ebp+4*9]
+        ;set address high 8 bits to vga ctr reg.
+        mov dx, 0x03d4
+        mov al, 0x0e
+        out dx, al
+        mov dx, 0x03d5
+        mov al, bh
+        out dx, al
+        ;set address low 8 bits to vga ctr reg.
+        mov dx, 0x03d4
+        mov al, 0x0f
+        out dx, al
+        mov dx, 0x03d5
+        mov al, bl
+        out dx, al
+        popad
+        ret
 
     put_int:
         pushad
