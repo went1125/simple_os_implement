@@ -1,9 +1,11 @@
 CC = gcc
 C_INCLUDE_DEVICE = ../lib/device
 C_INCLUDE_KERNEL = ../lib/kernel
-C_FLAGS = -I $(C_INCLUDE_DEVICE) -I $(C_INCLUDE_KERNEL) -c -m32 -fno-builtin -fno-stack-protector
+C_INCLUDE_GLOBAL = ../lib
 
-OBJS = timer.o
+C_FLAGS = -I $(C_INCLUDE_DEVICE) -I $(C_INCLUDE_KERNEL) -I $(C_INCLUDE_GLOBAL) -c -m32 -fno-builtin -fno-stack-protector
+
+OBJS = timer.o console.o
 
 all:$(OBJS)
 

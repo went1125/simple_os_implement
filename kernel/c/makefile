@@ -4,7 +4,7 @@ C_INCLUDE_KERNEL = ../../lib/kernel
 C_INCLUDE_DEVICE = ../../lib/device
 C_FLAGS = -I $(C_INCLUDE_GLOBAL) -I $(C_INCLUDE_KERNEL) -I $(C_INCLUDE_DEVICE) -c -m32 -fno-builtin -fno-stack-protector
 
-OBJS = interrupt.o init.o debug.o string.o bitmap.o memory.o thread.o list.o main.o
+OBJS = interrupt.o init.o debug.o string.o bitmap.o memory.o thread.o list.o main.o sync.o
 
 all:$(OBJS)
 
