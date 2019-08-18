@@ -9,7 +9,7 @@
 #define PIC_S_CTRL 0xa0
 #define PIC_S_DATA 0xa1
 
-#define IDT_DESC_CNT 0x21
+#define IDT_DESC_CNT 0x30
 
 #define EFLAGS_IF 0x00000200
 #define GET_EFLAGS(EFLAGS_VAR) asm volatile("pushfl; popl %0": "=g"(EFLAGS_VAR))
@@ -57,7 +57,7 @@ static void pic_init() {
     outb(PIC_S_DATA, 0x01); //ICW4 8086 mode, normal EOI
 
     /*Open IR0(timer interrupt)*/
-    outb(PIC_M_DATA, 0xfe);
+    outb(PIC_M_DATA, 0xfd);
     outb(PIC_S_DATA, 0xff);
 
     put_str("pic_init done\n");

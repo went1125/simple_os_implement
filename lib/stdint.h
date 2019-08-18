@@ -2,6 +2,10 @@
 #define __LIB_STDINT_H
 #define NULL 0
 
+typedef enum {
+    false,
+    true
+}bool;
 typedef signed char int8_t;
 typedef signed short int int16_t;
 typedef signed int int32_t;

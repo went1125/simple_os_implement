@@ -12,7 +12,7 @@ LD = ld
 LD_FLAGS = -m elf_i386 -Ttext $(KERNEL_ENTRY_ADDRESS) -e $(KERNEL_ENTRY_SECTION)
 LINK_OBJS = ./build/main.o ./build/print.o ./build/kernel.o ./build/timer.o ./build/interrupt.o ./build/init.o \
 			./build/debug.o ./build/string.o ./build/bitmap.o ./build/memory.o ./build/thread.o ./build/list.o \
-			./build/switch.o ./build/sync.o ./build/console.o
+			./build/switch.o ./build/sync.o ./build/console.o ./build/keyboard.o
 
 NASM = nasm
 
