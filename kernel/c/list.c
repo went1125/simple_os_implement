@@ -1,6 +1,5 @@
 #include "list.h"
 #include "interrupt.h"
-#include "stdint.h"
 
 void list_init(struct list* list) {
     list->head.prev = NULL;
@@ -37,8 +36,8 @@ struct list_elem* list_pop(struct list* plist) {
     return elem;
 }
 
-int list_empty(struct list* plist) {
-    return (int)(plist->head.next == &plist->tail);
+bool list_empty(struct list* plist) {
+    return (plist->head.next == &plist->tail);
 }
 
 uint32_t list_len(struct list* plist) {
@@ -61,11 +60,11 @@ struct list_elem* list_traversal(struct list* plist, function func, int arg) {
     return NULL;
 }
 
-int elem_find(struct list* plist, struct list_elem* obj_elem) {
+bool elem_find(struct list* plist, struct list_elem* obj_elem) {
     struct list_elem* elem = plist->head.next;
     while(elem != &plist->tail) {
-        if(elem == obj_elem) return 1;
+        if(elem == obj_elem) return true;
         elem = elem->next;
     }
-    return 0;
+    return false;
 }

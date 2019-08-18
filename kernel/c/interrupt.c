@@ -57,7 +57,7 @@ static void pic_init() {
     outb(PIC_S_DATA, 0x01); //ICW4 8086 mode, normal EOI
 
     /*Open IR0(timer interrupt)*/
-    outb(PIC_M_DATA, 0xfd);
+    outb(PIC_M_DATA, 0xfc);
     outb(PIC_S_DATA, 0xff);
 
     put_str("pic_init done\n");

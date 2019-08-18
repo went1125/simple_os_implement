@@ -4,6 +4,7 @@
 #include "io.h"
 #include "global.h"
 #include "stdint.h"
+#include "ioqueue.h"
 
 #define KBD_BUF_PORT 0x60
 
@@ -33,6 +34,8 @@
 #define caps_lock_make      0x3a
 
 static bool ctrl_status, ctrl_status, shift_status, alt_status, caps_lock_status, ext_scancode;
+
+struct ioqueue kbd_buf;
 
 static char keymap[][2] = {
     {0, 0},
@@ -142,7 +145,11 @@ static void intr_keyboard_handler() {
         uint8_t index = (scan_code &= 0x00ff);
         char cur_char = keymap[index][shift];
         if(cur_char) {
-            put_char(cur_char);
+            if(!ioq_full(&kbd_buf)) {
+                intr_status old_status = intr_disable();
+                ioq_putchar(&kbd_buf, cur_char);
+                intr_set_status(old_status);
+            }
             return;
         }
         if(scan_code == ctrl_l_make || scan_code == ctrl_r_make) ctrl_status = true;
@@ -157,6 +164,7 @@ static void intr_keyboard_handler() {
 
 void keyboard_init() {
     put_str("keyboard init start\n");
+    ioqueue_init(&kbd_buf);
     register_handler(0x21, intr_keyboard_handler);
     put_str("keyboard init done\n");
 }
